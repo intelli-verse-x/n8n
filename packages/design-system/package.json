@@ -15,11 +15,11 @@
   },
   "scripts": {
     "clean": "rimraf dist .turbo",
-    "build": "vite build",
+    "build": "node init && vite build",
     "typecheck": "vue-tsc --declaration --emitDeclarationOnly",
     "test": "vitest run --coverage",
     "test:dev": "vitest",
-    "build:storybook": "storybook build",
+    "build:storybook": "node init && storybook build",
     "storybook": "storybook dev -p 6006",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "lint": "eslint --quiet --ext .js,.ts,.vue src",
