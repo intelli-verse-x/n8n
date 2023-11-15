@@ -25,9 +25,9 @@
   },
   "scripts": {
     "clean": "rimraf dist .turbo",
-    "dev": "pnpm watch",
+    "dev": "node init && pnpm watch",
     "typecheck": "tsc",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node init && tsc -p tsconfig.build.json",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "lint": "eslint --quiet .",
     "lintfix": "eslint . --fix",

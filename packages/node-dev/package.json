@@ -20,9 +20,9 @@
   },
   "scripts": {
     "clean": "rimraf dist .turbo",
-    "dev": "pnpm watch",
-    "build": "tsc --noEmit",
-    "build-node-dev": "tsc",
+    "dev": "node init && pnpm watch",
+    "build": "node init && tsc --noEmit",
+    "build-node-dev": "node init && tsc",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "lint": "eslint --quiet .",
     "lintfix": "eslint . --fix",
