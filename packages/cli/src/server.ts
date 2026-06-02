@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import { access as fsAccess } from 'fs/promises';
 import helmet from 'helmet';
-import isEmpty from 'lodash/isEmpty';
 import { InstanceSettings, installGlobalProxyAgent } from 'n8n-core';
 import { jsonParse } from 'n8n-workflow';
 import { resolve } from 'path';
@@ -362,7 +361,6 @@ export class Server extends AbstractServer {
 
 			const isTLSEnabled =
 				this.globalConfig.protocol === 'https' && !!(this.sslKey && this.sslCert);
-			const isPreviewMode = process.env.N8N_PREVIEW_MODE === 'true';
 			const cspDirectives = jsonParse<{ [key: string]: Iterable<string> }>(
 				Container.get(SecurityConfig).contentSecurityPolicy,
 				{
@@ -371,18 +369,25 @@ export class Server extends AbstractServer {
 			);
 			const crossOriginOpenerPolicy = Container.get(SecurityConfig).crossOriginOpenerPolicy;
 			const cspReportOnly = Container.get(SecurityConfig).contentSecurityPolicyReportOnly;
+
+			// Allow embedding in the IntelliVerse admin hub (and local dev).
+			// Do not send X-Frame-Options — browsers honor frame-ancestors instead.
+			const adminEmbedOrigins = ["'self'", 'https://admin.intelli-verse-x.ai', 'http://localhost:3000'];
+			const existingFrameAncestors = cspDirectives['frame-ancestors']
+				? Array.from(cspDirectives['frame-ancestors'])
+				: [];
+			const mergedCspDirectives = {
+				...cspDirectives,
+				'frame-ancestors': [...new Set([...existingFrameAncestors, ...adminEmbedOrigins])],
+			};
+
 			const securityHeadersMiddleware = helmet({
-				contentSecurityPolicy: isEmpty(cspDirectives)
-					? false
-					: {
-							useDefaults: false,
-							reportOnly: cspReportOnly,
-							directives: {
-								...cspDirectives,
-							},
-						},
-				xFrameOptions:
-					isPreviewMode || inE2ETests || inDevelopment ? false : { action: 'sameorigin' },
+				contentSecurityPolicy: {
+					useDefaults: false,
+					reportOnly: cspReportOnly,
+					directives: mergedCspDirectives,
+				},
+				xFrameOptions: false,
 				dnsPrefetchControl: false,
 				// This is only relevant for Internet-explorer, which we do not support
 				ieNoOpen: false,
